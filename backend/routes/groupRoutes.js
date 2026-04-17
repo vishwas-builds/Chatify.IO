@@ -78,5 +78,26 @@ groupRouter.post("/:groupId/leave", protect, async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+// DELETE a group only by creator
+groupRouter.delete("/:groupId", protect, async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.groupId);
+
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.admin.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Action denied. You are not the owner of this group.",
+      });
+    }
+
+    await Group.findByIdAndDelete(req.params.groupId);
+    res.json({ message: "Group deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
 module.exports = groupRouter;

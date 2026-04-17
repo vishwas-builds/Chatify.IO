@@ -20,15 +20,12 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 import UsersList from "./UsersList";
-import { useRef, useState } from "react";
-import { useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import apiURL from "../../utils";
 import { FiSend, FiInfo, FiMessageCircle, FiTrash2 } from "react-icons/fi";
 
-const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
-  console.log(selectedGroup?._id);
-
+const ChatArea = ({ selectedGroup, socket, setSelectedGroup, fetchGroups }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [connectedUsers, setConnectedUsers] = useState([]);
@@ -44,7 +41,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
     onClose: onInfoClose,
   } = useDisclosure();
 
-  const currentUser = JSON.parse(localStorage.getItem("userInfo") || {});
+  const currentUser = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
   useEffect(() => {
     if (selectedGroup && socket) {
@@ -70,7 +67,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       });
 
       socket.on("message deleted", (messageId) => {
-        console.log("RECEIVER heard the delete signal for:", messageId);
         setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
       });
 
@@ -97,6 +93,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
           return newSet;
         });
       });
+
       //clean up
       return () => {
         socket.emit("leave room", selectedGroup?._id);
@@ -111,15 +108,16 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       };
     }
   }, [selectedGroup?._id, socket]);
+
   // New block for Auto-Scrolling
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, typingUsers.size]); // This ensures it runs every time a new message is added
+  }, [messages, typingUsers.size]);
+
   //fetch messages
   const fetchMessages = async () => {
-    const currentUser = JSON.parse(localStorage.getItem("userInfo") || {});
     const token = currentUser?.token;
     try {
       const { data } = await axios.get(
@@ -136,9 +134,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
 
   //send message
   const sendMessage = async () => {
-    if (!newMessage.trim()) {
-      return;
-    }
+    if (!newMessage.trim()) return;
     try {
       const token = currentUser.token;
       const { data } = await axios.post(
@@ -168,6 +164,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
     }
     inputRef.current?.focus();
   };
+
   //handleTyping
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
@@ -178,11 +175,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
         username: currentUser.username,
       });
     }
-    //clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    //set new timeout
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       if (selectedGroup) {
         socket.emit("stop typing", {
@@ -192,6 +185,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       setIsTyping(false);
     }, 2000);
   };
+
   //format time
   const formatTime = (date) => {
     return new Date(date).toLocaleTimeString("en-US", {
@@ -199,6 +193,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       minute: "2-digit",
     });
   };
+
   // delete message
   const deleteMessage = async (messageId) => {
     try {
@@ -208,7 +203,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       });
 
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-      console.log("SENDING delete signal for:", messageId);
       socket.emit("delete message", {
         messageId,
         groupId: selectedGroup._id,
@@ -223,6 +217,37 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       });
     }
   };
+
+  // Delete Group
+  const handleDeleteGroup = async (groupId) => {
+    try {
+      const token = currentUser.token;
+
+      await axios.delete(`${apiURL}/api/groups/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (fetchGroups) {
+        await fetchGroups();
+      }
+
+      onInfoClose();
+      setSelectedGroup(null);
+
+      toast({
+        title: "Group deleted successfully",
+        status: "success",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting group",
+        status: "error",
+        description: error.response?.data?.message || "An error occurred",
+      });
+    }
+  };
+
   //render typing indicator
   const renderTypingIndicator = () => {
     if (typingUsers.size === 0) return null;
@@ -243,7 +268,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
           borderRadius="lg"
           gap={2}
         >
-          {/* current user (You) -left side */}
           {username === currentUser?.username ? (
             <>
               <Avatar size="xs" name={username} />
@@ -289,30 +313,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
       </Box>
     ));
   };
-  // Sample data for demonstration
-  const sampleMessages = [
-    {
-      id: 1,
-      content: "Hey team! Just pushed the new updates to staging.",
-      sender: { username: "Sarah Chen" },
-      createdAt: "10:30 AM",
-      isCurrentUser: false,
-    },
-    {
-      id: 2,
-      content: "Great work! The new features look amazing 🚀",
-      sender: { username: "Alex Thompson" },
-      createdAt: "10:31 AM",
-      isCurrentUser: false,
-    },
-    {
-      id: 3,
-      content: "Thanks! Let's review it in our next standup.",
-      sender: { username: "You" },
-      createdAt: "10:32 AM",
-      isCurrentUser: true,
-    },
-  ];
 
   return (
     <Flex
@@ -328,7 +328,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
         bg="gray.50"
         maxW={{ base: "100%", lg: `calc(100% - 260px)` }}
       >
-        {/* Chat Header */}
         {selectedGroup ? (
           <>
             <Flex
@@ -341,7 +340,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
               borderColor="gray.200"
               boxShadow="sm"
             >
-              {/* Back button for mobile */}
               <Button
                 display={{ base: "inline-flex", md: "none" }}
                 variant="ghost"
@@ -350,14 +348,12 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
               >
                 ←
               </Button>
-
               <Icon
                 as={FiMessageCircle}
                 fontSize="24px"
                 color="blue.500"
                 mr={3}
               />
-
               <Box flex="1">
                 <Text
                   fontSize="lg"
@@ -368,10 +364,9 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
                   {selectedGroup.name}
                 </Text>
               </Box>
-
               <Icon
                 as={FiInfo}
-                fontSize="20px"
+                fontSize="26px"
                 color="gray.400"
                 cursor="pointer"
                 _hover={{ color: "blue.500" }}
@@ -379,7 +374,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
               />
             </Flex>
 
-            {/* Messages Area */}
             <VStack
               flex="1"
               overflowY="auto"
@@ -388,21 +382,7 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
               px={6}
               py={4}
               position="relative"
-              sx={{
-                "&::-webkit-scrollbar": {
-                  width: "8px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  width: "10px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "gray.200",
-                  borderRadius: "24px",
-                },
-              }}
             >
-              {/* Messages Area Content */}
-
               {messages && messages.length === 0 ? (
                 <Flex
                   h="100%"
@@ -481,7 +461,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
                           align="flex-start"
                         >
                           <Text wordBreak="break-word">{message.content}</Text>
-
                           {message.sender._id === currentUser?._id && (
                             <Icon
                               as={FiTrash2}
@@ -504,7 +483,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
               <div ref={messagesEndRef} />
             </VStack>
 
-            {/* Message Input */}
             <Box
               px={6}
               py={0}
@@ -526,14 +504,9 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
                   pr="4.5rem"
                   bg="gray.50"
                   border="none"
-                  _focus={{
-                    boxShadow: "none",
-                    bg: "gray.100",
-                  }}
+                  _focus={{ boxShadow: "none", bg: "gray.100" }}
                   onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      sendMessage();
-                    }
+                    if (e.key === "Enter") sendMessage();
                   }}
                 />
                 <InputRightElement width="4.5rem">
@@ -542,10 +515,6 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
                     size="sm"
                     colorScheme="blue"
                     borderRadius="full"
-                    _hover={{
-                      transform: "translateY(-1px)",
-                    }}
-                    transition="all 0.2s"
                     onClick={sendMessage}
                   >
                     <Icon as={FiSend} />
@@ -555,45 +524,37 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
             </Box>
           </>
         ) : (
-          <>
-            <Flex
-              h="100%"
-              direction="column"
-              align="center"
-              justify="center"
-              p={8}
-              textAlign="center"
-            >
-              <Icon
-                as={FiMessageCircle}
-                fontSize="64px"
-                color="gray.300"
-                mb={4}
-              />
-              <Text fontSize="xl" fontWeight="medium" color="gray.500" mb={2}>
-                Welcome to the Chatify.IO!
-              </Text>
-              <Text color="gray.500" mb={2}>
-                Select a group from the sidebar to start chatting
-              </Text>
-            </Flex>
-          </>
+          <Flex
+            h="100%"
+            direction="column"
+            align="center"
+            justify="center"
+            p={8}
+            textAlign="center"
+          >
+            <Icon
+              as={FiMessageCircle}
+              fontSize="64px"
+              color="gray.300"
+              mb={4}
+            />
+            <Text fontSize="xl" fontWeight="medium" color="gray.500" mb={2}>
+              Welcome to the Chatify.IO!
+            </Text>
+            <Text color="gray.500" mb={2}>
+              Select a group from the sidebar to start chatting
+            </Text>
+          </Flex>
         )}
       </Box>
 
-      {/* UsersList with responsive width */}
       <Box
         width={{ base: "100%", lg: "260px" }}
-        position={{ base: "static", lg: "sticky" }}
-        right={0}
-        top={0}
-        height={{ base: "auto", lg: "100%" }}
-        flexShrink={0}
         display={{ base: "none", lg: "block" }}
       >
         {selectedGroup && <UsersList users={connectedUsers} />}
       </Box>
-      {/* Group Info Modal */}
+
       <Modal isOpen={isInfoOpen} onClose={onInfoClose} isCentered>
         <ModalOverlay backdropFilter="blur(4px)" />
         <ModalContent>
@@ -611,10 +572,23 @@ const ChatArea = ({ selectedGroup, socket, setSelectedGroup }) => {
             >
               DESCRIPTION
             </Text>
-            <Text color="gray.700" fontSize="md" lineHeight="tall">
+            <Text color="gray.700" fontSize="md" lineHeight="tall" mb={6}>
               {selectedGroup?.description ||
                 "No description provided for this group."}
             </Text>
+
+            {selectedGroup?.admin?._id === currentUser?._id && (
+              <Button
+                colorScheme="red"
+                variant="outline"
+                width="full"
+                size="sm"
+                mt={4}
+                onClick={() => handleDeleteGroup(selectedGroup._id)}
+              >
+                Delete Group Permanently
+              </Button>
+            )}
           </ModalBody>
         </ModalContent>
       </Modal>

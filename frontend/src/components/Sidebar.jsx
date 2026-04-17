@@ -21,15 +21,19 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import apiURL from "../../utils";
 
-const Sidebar = ({ setSelectedGroup }) => {
+const Sidebar = ({
+  setSelectedGroup,
+  socket,
+  groups,
+  userGroups,
+  fetchGroups,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newGroupName, setNewGroupName] = useState("");
-  const [groups, setGroups] = useState([]);
-  const [userGroups, setUserGroups] = useState([]);
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const toast = useToast();
@@ -37,44 +41,19 @@ const Sidebar = ({ setSelectedGroup }) => {
 
   useEffect(() => {
     checkAdminStatus();
-    fetchGroups();
   }, []);
+
   //Check if login user is an admin
   const checkAdminStatus = () => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") || {});
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
     //!update admin status
     setIsAdmin(userInfo?.isAdmin || false);
   };
 
-  //fetch all groups
-  const fetchGroups = async () => {
-    try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || {});
-      const token = userInfo.token;
-      const { data } = await axios.get(`${apiURL}/api/groups`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setGroups(data);
-      //get user groups
-      const userGroupIds = data
-        ?.filter((group) => {
-          return group?.members?.some(
-            (member) => member?._id === userInfo?._id,
-          );
-        })
-        .map((group) => group?._id);
-      setUserGroups(userGroupIds);
-      return data;
-    } catch (error) {
-      console.log(error);
-    }
-  };
   //Create  groups
   const handleCreateGroup = async () => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || {});
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
       const token = userInfo.token;
       await axios.post(
         `${apiURL}/api/groups`,
@@ -108,11 +87,13 @@ const Sidebar = ({ setSelectedGroup }) => {
       });
     }
   };
+
   //logout
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
     navigate("/login");
   };
+
   //join group
   const handleJoinGroup = async (groupId) => {
     try {
@@ -127,16 +108,13 @@ const Sidebar = ({ setSelectedGroup }) => {
         },
       );
 
-      const freshGroups = await fetchGroups();
-
-      const newlyJoinedGroup = freshGroups.find((g) => g?._id === groupId);
-      setSelectedGroup(newlyJoinedGroup);
-
+      await fetchGroups();
       toast({ title: "Joined group successfully", status: "success" });
     } catch (error) {
       console.log("Join Error:", error);
     }
   };
+
   //leave group
   const handleLeaveGroup = async (groupId) => {
     try {
@@ -151,10 +129,7 @@ const Sidebar = ({ setSelectedGroup }) => {
         },
       );
 
-      setUserGroups((prev) => prev.filter((id) => id !== groupId));
-
       setSelectedGroup((prev) => (prev?._id === groupId ? null : prev));
-
       await fetchGroups();
 
       toast({ title: "Left group successfully", status: "success" });
@@ -166,7 +141,6 @@ const Sidebar = ({ setSelectedGroup }) => {
       });
     }
   };
-  // Sample groups data
 
   return (
     <Box
@@ -215,16 +189,16 @@ const Sidebar = ({ setSelectedGroup }) => {
 
       <Box flex="1" overflowY="auto" p={4} mb="80px">
         <VStack spacing={3} align="stretch">
-          {groups.map((group) => (
+          {groups?.map((group) => (
             <Box
               key={group._id}
               p={4}
               cursor="pointer"
               borderRadius="lg"
-              bg={userGroups.includes(group?._id) ? "blue.50" : "gray.50"}
+              bg={userGroups?.includes(group?._id) ? "blue.50" : "gray.50"}
               borderWidth="1px"
               borderColor={
-                userGroups.includes(group?._id) ? "blue.200" : "gray.200"
+                userGroups?.includes(group?._id) ? "blue.200" : "gray.200"
               }
               transition="all 0.2s"
               _hover={{
@@ -239,7 +213,7 @@ const Sidebar = ({ setSelectedGroup }) => {
                     <Text fontWeight="bold" color="gray.800">
                       {group.name}
                     </Text>
-                    {userGroups.includes(group?._id) && (
+                    {userGroups?.includes(group?._id) && (
                       <Badge ml={2} colorScheme="blue" variant="subtle">
                         Joined
                       </Badge>
@@ -255,20 +229,12 @@ const Sidebar = ({ setSelectedGroup }) => {
                   ml={3}
                   onClick={(e) => {
                     e.stopPropagation();
-
                     userGroups?.includes(group?._id)
                       ? handleLeaveGroup(group?._id)
                       : handleJoinGroup(group?._id);
                   }}
-                  _hover={{
-                    transform: userGroups.includes(group?._id)
-                      ? "scale(1.05)"
-                      : "none",
-                    bg: userGroups.includes(group?._id) ? "red.50" : "blue.600",
-                  }}
-                  transition="all 0.2s"
                 >
-                  {userGroups.includes(group?._id) ? "Leave" : "Join"}
+                  {userGroups?.includes(group?._id) ? "Leave" : "Join"}
                 </Button>
               </Flex>
             </Box>

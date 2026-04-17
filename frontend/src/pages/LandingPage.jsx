@@ -20,11 +20,9 @@ import {
   FiUsers,
   FiLock,
   FiLogIn,
-  FiLogOut,
   FiUserPlus,
   FiGlobe,
   FiActivity,
-  FiCheckCircle,
   FiUserCheck,
 } from "react-icons/fi";
 
@@ -106,7 +104,63 @@ const ChatMessage = ({ message, sender, time, isUser }) => {
 
 export default function LandingPage() {
   return (
-    <Box bg={useColorModeValue("gray.50", "gray.900")} minH="100vh">
+    <Box
+      bg={useColorModeValue("gray.50", "gray.900")}
+      minH="100vh"
+      position="relative" // Required to pin the Nav to the top right
+    >
+      {/* --- NEW: TOP NAVIGATION BAR --- */}
+      <Flex
+        as="nav"
+        position="absolute"
+        top={0}
+        right={0}
+        left={0}
+        p={8}
+        justify="flex-end"
+        align="center"
+        zIndex={10}
+        display={{ base: "none", md: "flex" }} // Hidden on mobile to keep it clean
+      >
+        <HStack spacing={10}>
+          <Text
+            as="a"
+            href="#features"
+            fontWeight={500}
+            color={useColorModeValue("gray.600", "gray.200")}
+            _hover={{ color: "blue.400", cursor: "pointer" }}
+            transition="all 0.2s"
+          >
+            Features
+          </Text>
+          <HStack spacing={4}>
+            <Button
+              as={RouterLink}
+              to="/login"
+              variant="ghost"
+              colorScheme="blue"
+              leftIcon={<FiLogIn />}
+              fontWeight={500}
+            >
+              Sign In
+            </Button>
+            <Button
+              as={RouterLink}
+              to="/register"
+              colorScheme="blue"
+              bg="blue.400"
+              rounded="full"
+              _hover={{ bg: "blue.500" }}
+              px={6}
+              leftIcon={<FiUserPlus />}
+            >
+              Join Now
+            </Button>
+          </HStack>
+        </HStack>
+      </Flex>
+      {/* ------------------------------- */}
+
       {/* Hero Section */}
       <Container maxW="7xl" pt={10}>
         <Stack
@@ -263,7 +317,14 @@ export default function LandingPage() {
         </Stack>
 
         {/* Features Grid */}
-        <Box py={20}>
+        <Box py={20} position="relative">
+          <Box
+            id="features"
+            position="absolute"
+            top="-70px"
+            visibility="hidden"
+          />
+
           <VStack spacing={2} textAlign="center" mb={12}>
             <Heading fontSize="4xl">Powerful Features</Heading>
             <Text fontSize="lg" color="gray.500">
