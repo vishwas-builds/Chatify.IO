@@ -190,12 +190,19 @@ export default function LandingPage() {
       {/* ------------------------------- */}
 
       {/* Hero Section */}
-      <Container maxW="7xl" pt={20}>
+      <Container
+        maxW="7xl"
+        minH="100vh"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        pt={20}
+        pb={10}
+      >
         <Stack
+          direction={{ base: "column", lg: "row" }}
+          spacing={{ base: 5, md: 10 }}
           align="center"
-          spacing={{ base: 8, md: 10 }}
-          py={{ base: 10, md: 12 }}
-          direction={{ base: "column", md: "row" }}
         >
           <Stack flex={1} spacing={{ base: 5, md: 10 }}>
             <Heading
@@ -375,96 +382,95 @@ export default function LandingPage() {
             </Box>
           </Flex>
         </Stack>
+      </Container>
+      {/* Features Grid */}
+      <Box pt={5} pb={20} position="relative">
+        <Box
+          id="features"
+          position="absolute"
+          top="-70px"
+          visibility="hidden"
+        />
 
-        {/* Features Grid */}
-        <Box pt={20} pb={20} position="relative">
-          <Box
-            id="features"
-            position="absolute"
-            top="-100px"
-            visibility="hidden"
+        <VStack spacing={2} textAlign="center" mb={2}>
+          <Heading fontSize="4xl">Powerful Features</Heading>
+          <Text fontSize="lg" color="gray.500">
+            Everything you need for seamless team collaboration
+          </Text>
+        </VStack>
+
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 3 }}
+          spacing={10}
+          px={{ base: 4, md: 8 }}
+        >
+          <Feature
+            icon={<Icon as={FiLock} w={10} h={10} />}
+            title="Secure Authentication"
+            badges={[{ text: "Secure", color: "green" }]}
+            text="Register and login securely with email verification and encrypted passwords."
           />
+          <Feature
+            icon={<Icon as={FiUsers} w={10} h={10} />}
+            title="Group Management"
+            badges={[{ text: "Real-time", color: "blue" }]}
+            text="Create, join, or leave groups easily. Manage multiple conversations in one place."
+          />
+          <Feature
+            icon={<Icon as={FiUserCheck} w={10} h={10} />}
+            title="Online Presence"
+            badges={[{ text: "Live", color: "green" }]}
+            text="See who's currently online and active in your groups in real-time."
+          />
+          <Feature
+            icon={<Icon as={FiActivity} w={10} h={10} />}
+            title="Typing Indicators"
+            badges={[{ text: "Interactive", color: "purple" }]}
+            text="Know when others are typing with real-time typing indicators."
+          />
+          <Feature
+            icon={<Icon as={FiMessageSquare} w={10} h={10} />}
+            title="Instant Messaging"
+            badges={[{ text: "Fast", color: "orange" }]}
+            text="Send and receive messages instantly with real-time delivery and notifications."
+          />
+          <Feature
+            icon={<Icon as={FiGlobe} w={10} h={10} />}
+            title="Global Access"
+            badges={[{ text: "24/7", color: "blue" }]}
+            text="Access your chats from anywhere, anytime with persistent connections."
+          />
+        </SimpleGrid>
+      </Box>
 
-          <VStack spacing={2} textAlign="center" mb={2}>
-            <Heading fontSize="4xl">Powerful Features</Heading>
-            <Text fontSize="lg" color="gray.500">
-              Everything you need for seamless team collaboration
+      {/* Call to Action */}
+      <Box py={20}>
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={10}
+          align="center"
+          justify="center"
+          bg={useColorModeValue("blue.50", "blue.900")}
+          p={10}
+          rounded="xl"
+        >
+          <VStack align="flex-start" spacing={4}>
+            <Heading size="lg">Ready to get started?</Heading>
+            <Text color="gray.600" fontSize="lg">
+              Join thousands of users already using our platform
             </Text>
           </VStack>
-
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
-            spacing={10}
-            px={{ base: 4, md: 8 }}
+          <Button
+            as={RouterLink}
+            to="/register"
+            size="lg"
+            colorScheme="blue"
+            rightIcon={<FiUserPlus />}
           >
-            <Feature
-              icon={<Icon as={FiLock} w={10} h={10} />}
-              title="Secure Authentication"
-              badges={[{ text: "Secure", color: "green" }]}
-              text="Register and login securely with email verification and encrypted passwords."
-            />
-            <Feature
-              icon={<Icon as={FiUsers} w={10} h={10} />}
-              title="Group Management"
-              badges={[{ text: "Real-time", color: "blue" }]}
-              text="Create, join, or leave groups easily. Manage multiple conversations in one place."
-            />
-            <Feature
-              icon={<Icon as={FiUserCheck} w={10} h={10} />}
-              title="Online Presence"
-              badges={[{ text: "Live", color: "green" }]}
-              text="See who's currently online and active in your groups in real-time."
-            />
-            <Feature
-              icon={<Icon as={FiActivity} w={10} h={10} />}
-              title="Typing Indicators"
-              badges={[{ text: "Interactive", color: "purple" }]}
-              text="Know when others are typing with real-time typing indicators."
-            />
-            <Feature
-              icon={<Icon as={FiMessageSquare} w={10} h={10} />}
-              title="Instant Messaging"
-              badges={[{ text: "Fast", color: "orange" }]}
-              text="Send and receive messages instantly with real-time delivery and notifications."
-            />
-            <Feature
-              icon={<Icon as={FiGlobe} w={10} h={10} />}
-              title="Global Access"
-              badges={[{ text: "24/7", color: "blue" }]}
-              text="Access your chats from anywhere, anytime with persistent connections."
-            />
-          </SimpleGrid>
-        </Box>
-
-        {/* Call to Action */}
-        <Box py={20}>
-          <Stack
-            direction={{ base: "column", md: "row" }}
-            spacing={10}
-            align="center"
-            justify="center"
-            bg={useColorModeValue("blue.50", "blue.900")}
-            p={10}
-            rounded="xl"
-          >
-            <VStack align="flex-start" spacing={4}>
-              <Heading size="lg">Ready to get started?</Heading>
-              <Text color="gray.600" fontSize="lg">
-                Join thousands of users already using our platform
-              </Text>
-            </VStack>
-            <Button
-              as={RouterLink}
-              to="/register"
-              size="lg"
-              colorScheme="blue"
-              rightIcon={<FiUserPlus />}
-            >
-              Create Free Account
-            </Button>
-          </Stack>
-        </Box>
-      </Container>
+            Create Free Account
+          </Button>
+        </Stack>
+      </Box>
     </Box>
   );
 }
