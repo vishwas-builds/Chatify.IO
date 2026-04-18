@@ -386,7 +386,7 @@ export default function LandingPage() {
         </Stack>
       </Container>
       {/* Features Grid */}
-      <Box pt={5} pb={10} position="relative">
+      <Box pt={0} pb={10} position="relative">
         <Box
           id="features"
           position="absolute"
@@ -394,7 +394,7 @@ export default function LandingPage() {
           visibility="hidden"
         />
 
-        <VStack spacing={2} textAlign="center" mb={2}>
+        <VStack spacing={2} textAlign="center" mb={5}>
           <Heading fontSize="4xl">Powerful Features</Heading>
           <Text fontSize="lg" color="gray.500">
             Everything you need for seamless team collaboration
