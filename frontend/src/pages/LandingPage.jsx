@@ -384,7 +384,7 @@ export default function LandingPage() {
         </Stack>
       </Container>
       {/* Features Grid */}
-      <Box pt={5} pb={20} position="relative">
+      <Box pt={5} pb={10} position="relative">
         <Box
           id="features"
           position="absolute"
@@ -444,15 +444,18 @@ export default function LandingPage() {
       </Box>
 
       {/* Call to Action */}
-      <Box py={20}>
+      <Box py={10}>
         <Stack
           direction={{ base: "column", md: "row" }}
           spacing={10}
           align="center"
           justify="center"
-          bg={useColorModeValue("blue.50", "blue.900")}
+          bg={useColorModeValue("blue.100", "blue.900")}
           p={10}
-          rounded="xl"
+          rounded="2xl"
+          maxW="5xl"
+          mx="auto"
+          px={{ base: 6, md: 10 }}
         >
           <VStack align="flex-start" spacing={4}>
             <Heading size="lg">Ready to get started?</Heading>
