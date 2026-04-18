@@ -120,14 +120,15 @@ export default function LandingPage() {
         justify="flex-end"
         align="center"
         zIndex={10}
-        display={{ base: "none", md: "flex" }} // Hidden on mobile to keep it clean
+        display={{ base: "none", md: "flex" }}
       >
         <HStack spacing={10}>
           <Text
             as="a"
             href="#features"
-            fontWeight={500}
-            color={useColorModeValue("gray.600", "gray.200")}
+            fontSize="2xl"
+            fontWeight={700}
+            color={useColorModeValue("gray.700", "gray.100")}
             _hover={{ color: "blue.400", cursor: "pointer" }}
             transition="all 0.2s"
           >
@@ -140,7 +141,9 @@ export default function LandingPage() {
               variant="ghost"
               colorScheme="blue"
               leftIcon={<FiLogIn />}
-              fontWeight={500}
+              fontSize="xl"
+              fontWeight={600}
+              size="lg"
             >
               Sign In
             </Button>
@@ -151,7 +154,10 @@ export default function LandingPage() {
               bg="blue.400"
               rounded="full"
               _hover={{ bg: "blue.500" }}
-              px={6}
+              size="lg"
+              fontSize="xl"
+              fontWeight={600}
+              px={10}
               leftIcon={<FiUserPlus />}
             >
               Join Now
