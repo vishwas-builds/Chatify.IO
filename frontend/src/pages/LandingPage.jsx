@@ -317,11 +317,11 @@ export default function LandingPage() {
         </Stack>
 
         {/* Features Grid */}
-        <Box py={20} position="relative">
+        <Box pt={0} pb={20} position="relative">
           <Box
             id="features"
             position="absolute"
-            top="-70px"
+            top="-40px"
             visibility="hidden"
           />
 
@@ -331,6 +331,7 @@ export default function LandingPage() {
               Everything you need for seamless team collaboration
             </Text>
           </VStack>
+
           <SimpleGrid
             columns={{ base: 1, md: 2, lg: 3 }}
             spacing={10}
