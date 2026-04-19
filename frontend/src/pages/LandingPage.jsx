@@ -490,7 +490,7 @@ export default function LandingPage() {
             <HStack spacing={6}>
               <Box
                 as="a"
-                href="https://github.com/vishwas-builds"
+                href="https://github.com/vishwasbuilds"
                 target="_blank"
                 _hover={{ color: "white" }}
                 transition="all 0.2s"
@@ -499,7 +499,7 @@ export default function LandingPage() {
               </Box>
               <Box
                 as="a"
-                href="https://www.linkedin.com/in/vishwas-builds/"
+                href="https://www.linkedin.com/in/vishwasbuilds/"
                 target="_blank"
                 _hover={{ color: "white" }}
                 transition="all 0.2s"
