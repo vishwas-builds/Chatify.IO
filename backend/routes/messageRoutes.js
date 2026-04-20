@@ -1,7 +1,7 @@
 const express = require("express");
 const Message = require("../models/ChatModel");
 const { protect } = require("../middleware/authMiddleware");
-const Group = require("../models/groupModel"); // change
+const Group = require("../models/GroupModel");
 
 const messageRouter = express.Router();
 
@@ -10,7 +10,6 @@ messageRouter.post("/", protect, async (req, res) => {
   try {
     const { content, groupId } = req.body;
 
-    // change
     const group = await Group.findById(groupId);
     if (!group || !group.members.includes(req.user._id)) {
       return res.status(403).json({ message: "Join the group first!" });
